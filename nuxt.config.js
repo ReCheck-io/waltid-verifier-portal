@@ -1,69 +1,64 @@
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'waltid-verifier-portal',
+    title: 'EBSI Verifier',
     htmlAttrs: {
-      lang: 'en'
+      lang: 'en',
     },
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: '' },
-      { name: 'format-detection', content: 'telephone=no' }
+      { name: 'format-detection', content: 'telephone=no' },
     ],
-    link: [
-      { rel: 'icon', type: 'image/png', href: '/favicon.png' }
-    ]
+    link: [{ rel: 'icon', type: 'image/png', href: '/favicon.png' }],
   },
 
-  // Global CSS: https://go.nuxtjs.dev/config-css
-  css: [
-    "@/assets/css/bootstrap-icons.css"
-  ],
+  css: ['~/assets/scss/fonts.scss', '~/assets/scss/main.scss'],
 
-  // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [
-    '@/plugins/bootstrap',
-    '@/plugins/bootstrap-script',
-
-  ],
-
-  // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
+  plugins: [],
 
-  // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
-  buildModules: [
-    // https://go.nuxtjs.dev/eslint
-    '@nuxtjs/eslint-module'
-  ],
+  module: {
+    rules: [
+      {
+        test: /\.s[ac]ss$/i,
+        use: ['style-loader', 'css-loader', 'sass-loader'],
+      },
+    ],
+  },
 
-  // Modules: https://go.nuxtjs.dev/config-modules
-  modules: [
-    // https://go.nuxtjs.dev/bootstrap
-    'bootstrap-vue/nuxt',
-    // https://go.nuxtjs.dev/axios
-    '@nuxtjs/axios'
-  ],
+  buildModules: ['@nuxtjs/eslint-module', '@nuxt/postcss8'],
 
-  // Axios module configuration: https://go.nuxtjs.dev/config-axios
-  // Axios module configuration: https://go.nuxtjs.dev/config-axios
+  modules: ['@nuxtjs/axios'],
+
   axios: {
-    proxy: true
+    proxy: true,
   },
 
   proxy: {
     // '/verifier-api/': 'https://wallet.waltid.org',
     // '/api/': 'https://wallet.waltid.org'
-     '/verifier-api/': 'http://localhost:8080/',
-     '/api/': 'http://localhost:8080/'
+    '/verifier-api/': 'http://localhost:8080/',
+    '/api/': 'http://localhost:8080/',
   },
-
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
 
+  build: {
+    babel: {
+      compact: true,
+    },
+    postcss: {
+      plugins: {
+        tailwindcss: {},
+        autoprefixer: {},
+      },
+    },
+  },
 
   ssr: false,
   server: {
-    port: 4000
-  }
+    port: 4000,
+  },
 }

@@ -1,51 +1,78 @@
 <template>
-    <main class="_home d-flex justify-content-centr align-items-center">
-      <section class="py-5 text-center container">
-        <div class="row py-lg-5">
-          <div class="col-lg-6 col-md-8 mx-auto">
-            <img src="/favicon.png"/>
-            <h2 class="fw-normal">
-              Welcome to the
-            </h2>
-            <h2 class="fw-bold">
-              Demo Verifier Portal
-            </h2>
-            <p class="lead text-muted">
-              Connect your wallet and share<br>your credentials to access services.
-            </p>
-            <p>
-              <a :href="'/verifier-api/present/?walletId=' + wallets[0].id + '&schemaUri=' + vidSchemaUri" class="btn btn-primary my-2 fw-bold _btn">Connect Wallet using <b>Verifiable ID</b></a>
-              <a :href="'/verifier-api/present/?walletId=' + wallets[0].id + '&schemaUri=' + bidSchemaUri" class="btn btn-success my-2 fw-bold _btn">Connect Wallet using <b>Bank ID</b></a>
-            </p>
-            <p class="text-muted fw-bold">© 2022 walt.id</p>
-          </div>
-        </div>
-      </section>
+  <div class="flex flex-col w-full h-full">
+    <Navbar />
+    <main class="mt-8 w-full h-full flex flex-col items-center">
+      <h2 class="mb-8 text-2xl text-gray-dark">
+        Scan QR Code to verify Credential
+      </h2>
+
+      <BaseButton @click="isScanning = true" v-if="!isScanning">
+        Start Scanning
+      </BaseButton>
+
+      <div class="mb-12 max-w-[800px]" v-if="isScanning">
+        <QrcodeStream @decode="onDecode" @init="onInit"></QrcodeStream>
+      </div>
+
+      <ScanResultView
+        class="my-8"
+        v-if="!isScanning && decodedCredential"
+        :credential="decodedCredential" />
     </main>
+  </div>
 </template>
 
 <script>
-export default {
-  data () {
-    return {
-      vidSchemaUri: 'https://api.preprod.ebsi.eu/trusted-schemas-registry/v1/schemas/0xb77f8516a965631b4f197ad54c65a9e2f9936ebfb76bae4906d33744dbcc60ba',
-      bidSchemaUri: 'https://raw.githubusercontent.com/walt-id/waltid-ssikit-vclib/master/src/test/resources/schemas/EuropeanBankIdentity.json'
+import { QrcodeStream } from 'vue-qrcode-reader'
+import ScanResultView from '../components/ScanResultView.vue'
+import BaseButton from '../components/common/BaseButton.vue'
+import Navbar from '../components/Navbar.vue'
 
+export default {
+  components: {
+    ScanResultView,
+    QrcodeStream,
+    BaseButton,
+    Navbar,
+  },
+
+  data() {
+    return {
+      currentYear: new Date().getFullYear(),
+
+      isScanning: false,
+      decodedCredential: null,
+
+      vidSchemaUri:
+        'https://api.preprod.ebsi.eu/trusted-schemas-registry/v1/schemas/0xb77f8516a965631b4f197ad54c65a9e2f9936ebfb76bae4906d33744dbcc60ba',
+      bidSchemaUri:
+        'https://raw.githubusercontent.com/walt-id/waltid-ssikit-vclib/master/src/test/resources/schemas/EuropeanBankIdentity.json',
     }
   },
-  async asyncData ({ $axios }) {
+
+  methods: {
+    async onInit(promise) {
+      try {
+        await promise
+      } catch (e) {
+        console.error(e)
+      }
+    },
+
+    async onDecode(content) {
+      if (content) {
+        this.isScanning = false
+        const tempData = JSON.parse(content, null, 4)
+        if (tempData && tempData.type && tempData.credentialSubject) {
+          this.decodedCredential = tempData
+        }
+      }
+    },
+  },
+
+  async asyncData({ $axios }) {
     const wallets = await $axios.$get('/verifier-api/wallets/list')
     return { wallets }
-  }
+  },
 }
 </script>
-
-<style scoped>
-._home{
-  height: 100vh;
-}
-._btn{
-  font-size: 18px;
-  padding: 10px 55px;
-}
-</style>
